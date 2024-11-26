@@ -48,8 +48,7 @@ namespace AkamontoExchangeWeaponRoulette
             this.PlayerUsingWeaponCategoryTextBlockList = new List<TextBlock>();
             this.weaponCategoryNameList = new List<string>();
             this.weaponCategorys = new List<List<string>>();
-            this.AlphaPeopleCount.SelectedIndex = 3;
-            this.BravoPeopleCount.SelectedIndex = 3;
+            this.PeopleCount.SelectedIndex = 3;
 
             this.shooter = new List<string>
             {
@@ -252,39 +251,28 @@ namespace AkamontoExchangeWeaponRoulette
 
         private void CreateWeaponTextBlock()
         {
-            StackPanel alphaWeapon = this.AlphaTeamWeapon;
-            StackPanel bravoWeapon = this.BravoTeamWeapon;
-            StackPanel alphaCategory = this.AlphaTeamWeaponCategory;
-            StackPanel bravoCategory = this.BravoTeamWeaponCategory;
+            StackPanel teamWeapon = this.TeamWeapon;
+            StackPanel teamWeaponCategory = this.TeamWeaponCategory;
 
-            alphaWeapon.Children.Clear();
-            bravoWeapon.Children.Clear();
-            alphaCategory.Children.Clear();
-            bravoCategory.Children.Clear();
+            teamWeapon.Children.Clear();
+            teamWeaponCategory.Children.Clear();
             this.PlayerUsingWeaponTextBoxList.Clear();
             this.PlayerUsingWeaponCategoryTextBlockList.Clear();
 
-            List<StackPanel> weaponPanelList = new List<StackPanel> { alphaWeapon, bravoWeapon };
-            List<StackPanel> categoryPanelList = new List<StackPanel> { alphaCategory, bravoCategory };
-            this.teamPeopleOfNumberList = new List<int> { int.Parse(AlphaPeopleCount.Text), int.Parse(BravoPeopleCount.Text) };
             TextBox weaponTextBox = new TextBox();
             TextBlock weaponCategoryTextBlock = new TextBlock();
-            for (int i = 0; i < 2; i++)
+            for (int j = 0; j < int.Parse(PeopleCount.Text); j++)
             {
-                for (int j = 0; j < this.teamPeopleOfNumberList[i]; j++)
-                {
-                    weaponTextBox = new TextBox();
-                    weaponCategoryTextBlock = new TextBlock();
-                    weaponTextBox.Margin = new Thickness(0, 5, 0, 0);
-                    weaponCategoryTextBlock.Margin = new Thickness(2, 5, 0, 0);
-                    weaponCategoryTextBlock.Height = 18;
-                    weaponCategoryTextBlock.Text = "未設定";
-                    // weaponTextBlock.IsEnabled = false;
-                    weaponPanelList[i].Children.Add(weaponTextBox);
-                    categoryPanelList[i].Children.Add(weaponCategoryTextBlock);
-                    this.PlayerUsingWeaponTextBoxList.Add(weaponTextBox);
-                    this.PlayerUsingWeaponCategoryTextBlockList.Add(weaponCategoryTextBlock);
-                }
+                weaponTextBox = new TextBox();
+                weaponCategoryTextBlock = new TextBlock();
+                weaponTextBox.Margin = new Thickness(0, 5, 0, 0);
+                weaponCategoryTextBlock.Margin = new Thickness(2, 5, 0, 0);
+                weaponCategoryTextBlock.Height = 18;
+                weaponCategoryTextBlock.Text = "未設定";
+                this.PlayerUsingWeaponTextBoxList.Add(weaponTextBox);
+                this.PlayerUsingWeaponCategoryTextBlockList.Add(weaponCategoryTextBlock);
+                this.TeamWeapon.Children.Add(weaponTextBox);
+                this.TeamWeaponCategory.Children.Add(weaponCategoryTextBlock);
             }
         }
         private void PeopleCount_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -318,32 +306,23 @@ namespace AkamontoExchangeWeaponRoulette
         {
             Random random = new Random();
 
-            StackPanel alphaWeapon = this.AlphaTeamWeapon;
-            StackPanel bravoWeapon = this.BravoTeamWeapon;
-            StackPanel alphaWeaponCategory = this.AlphaTeamWeaponCategory;
-            StackPanel bravoWeaponCategory = this.BravoTeamWeaponCategory;
-            List<StackPanel> weaponList = new List<StackPanel> { alphaWeapon, bravoWeapon };
-            List<StackPanel> categoryList = new List<StackPanel> { alphaWeaponCategory, bravoWeaponCategory };
+            StackPanel teamWeaponCategory = this.TeamWeaponCategory;
 
-            string resultMD = "";
+            string resultMD = $"## {DateTime.Now}\n";
 
-            for (int i = 0; i < 2; i++)
+            for (int count = 0; count < int.Parse(this.PeopleCount.Text); count++)
             {
-                resultMD += i == 0 ? $"# アルファ({this.teamPeopleOfNumberList[i]}人)\n" : $"# ブラボー({this.teamPeopleOfNumberList[i]}人)\n";
-                for (int count = 0; count < this.teamPeopleOfNumberList[i]; count++)
-                {
-                    resultMD += $"## プレイヤー{count + 1}\n";
-                    int categoryNumber = random.Next(this.weaponCategoryNameList.Count);
-                    List<string> weaponCategory = this.weaponCategorys[categoryNumber];
-                    string selectedWeapon = weaponCategory[random.Next(weaponCategory.Count)];
-                    ((TextBox)weaponList[i].Children[count]).Text = selectedWeapon;
-                    ((TextBlock)categoryList[i].Children[count]).Text = this.weaponCategoryNameList[categoryNumber];
-                    resultMD += $"{selectedWeapon}({this.weaponCategoryNameList[categoryNumber]})\n";
-                    this.weaponCategoryNameList.RemoveRange(categoryNumber, 1);
-                    this.weaponCategorys.RemoveRange(categoryNumber, 1);
-                }
-                this.ResetWeaponCategorys();
+                // resultMD += $"## プレイヤー{count + 1}\n";
+                int categoryNumber = random.Next(this.weaponCategoryNameList.Count);
+                List<string> weaponCategory = this.weaponCategorys[categoryNumber];
+                string selectedWeapon = weaponCategory[random.Next(weaponCategory.Count)];
+                this.PlayerUsingWeaponTextBoxList[count].Text = selectedWeapon;
+                this.PlayerUsingWeaponCategoryTextBlockList[count].Text = this.weaponCategoryNameList[categoryNumber];
+                resultMD += $"- {selectedWeapon}({this.weaponCategoryNameList[categoryNumber]})\n";
+                this.weaponCategoryNameList.RemoveRange(categoryNumber, 1);
+                this.weaponCategorys.RemoveRange(categoryNumber, 1);
             }
+            this.ResetWeaponCategorys();
 
             Clipboard.SetText(resultMD);
             this.SetTextStatusBar();
