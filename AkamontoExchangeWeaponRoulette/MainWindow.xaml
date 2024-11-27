@@ -9,14 +9,13 @@
         ResizeMode="NoResize"
         SizeToContent="WidthAndHeight">
     <DockPanel>
-        <StatusBar DockPanel.Dock="Bottom">
-            <StatusBar.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <Grid>
-                    </Grid>
-                </ItemsPanelTemplate>
-            </StatusBar.ItemsPanel>
-            <TextBlock x:Name="LogStatus"/>
+        <StatusBar DockPanel.Dock="Bottom" VerticalAlignment="Center">
+            <StatusBarItem DockPanel.Dock="Right">
+                <TextBlock x:Name="TimeTextBox" HorizontalAlignment="Right"/>
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock x:Name="LogStatus" HorizontalAlignment="Left"/>
+            </StatusBarItem>
         </StatusBar>
         <StackPanel Margin="5"  Orientation="Horizontal">
             <GroupBox Header="ブキ">
@@ -27,8 +26,8 @@
                     </StackPanel>
                 </StackPanel>
             </GroupBox>
-            <DockPanel Margin="5,10,0,0" Width="60" LastChildFill="False">
-                <TextBlock Margin="0,5,0,0" Width="60" DockPanel.Dock="Top" Height="20" Text="人数"/>
+            <DockPanel Margin="5,0,0,0" Width="60" LastChildFill="False">
+                <TextBlock Width="60" DockPanel.Dock="Top" Height="20" Text="人数"/>
                 <ComboBox x:Name="PeopleCount" DockPanel.Dock="Top" Width="60" Height="25" SelectionChanged="PeopleCount_SelectionChanged">
                     <ComboBoxItem Content="1"/>
                     <ComboBoxItem Content="2"/>
@@ -36,6 +35,12 @@
                     <ComboBoxItem Content="4"/>
                 </ComboBox>
                 <Button Width="60" Height="25" Content="ルーレット" DockPanel.Dock="Bottom" Click="Button_Click"/>
+                <GroupBox Header="メソッド" DockPanel.Dock="Bottom">
+                    <StackPanel>
+                        <RadioButton x:Name="WeaponRadio" Content="ブキ" IsChecked="True"/>
+                        <RadioButton x:Name="CategoryRadio" Content="ブキ種"/>
+                    </StackPanel>
+                </GroupBox>
             </DockPanel>
         </StackPanel>
     </DockPanel>

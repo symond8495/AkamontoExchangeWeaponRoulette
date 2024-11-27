@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Threading;
 
 namespace AkamontoExchangeWeaponRoulette
 {
@@ -25,7 +26,6 @@ namespace AkamontoExchangeWeaponRoulette
     {
         private List<List<string>> weaponCategorys;
         private List<string> weaponCategoryNameList;
-        private List<int> teamPeopleOfNumberList;
         private List<string> shooter;
         private List<string> roller;
         private List<string> charger;
@@ -298,34 +298,94 @@ namespace AkamontoExchangeWeaponRoulette
                 }));
             });
         }
-        private void SetTextStatusBar()
+        private void SetTextStatusBar(string timer)
         {
             this.LogStatus.Text = $"最終ルーレット: {DateTime.Now}";
+            this.TimeTextBox.Text = timer ;
         }
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Random random = new Random();
+            string resultMD = $"## {DateTime.Now}\n";
+            Stopwatch sw = new Stopwatch();
+            void WeaponMethod()
+            {
+                Random random = new Random();
+                sw.Start();
+                for (int count = 0; count < int.Parse(this.PeopleCount.Text); count++)
+                {
+                    int categoryNumber = random.Next(this.weaponCategoryNameList.Count);
+                    List<string> weaponCategory = this.weaponCategorys[categoryNumber];
+                    string selectedWeapon = weaponCategory[random.Next(weaponCategory.Count)];
+                    this.PlayerUsingWeaponTextBoxList[count].Text = selectedWeapon;
+                    this.PlayerUsingWeaponCategoryTextBlockList[count].Text = this.weaponCategoryNameList[categoryNumber];
+                    resultMD += $"- {selectedWeapon}({this.weaponCategoryNameList[categoryNumber]})\n";
+                    this.weaponCategoryNameList.RemoveRange(categoryNumber, 1);
+                    this.weaponCategorys.RemoveRange(categoryNumber, 1);
+                }
+                sw.Stop();
+                this.ResetWeaponCategorys();
+            }
+            void CategoryMethod()
+            {
+                List<string> weaponList = new List<string>();
+                Dictionary<string, int>weaponListIndexLine = new Dictionary<string, int>();
+                foreach(var item in this.weaponCategorys.Select((list, index) => new { list, index}))
+                {
+                    weaponList.AddRange(item.list);
+                    foreach(var weapon in item.list)
+                    {
+                        weaponListIndexLine[weapon] = item.index;
+                    }
+                }
+                bool isDecided = false;
+                sw.Start();
+                while (!isDecided)
+                {
+                    List<int> teamCategoryNumberList = new List<int>();
+                    List<string> organization = new List<string>();
+                    Random random = new Random();
+                    for (int count = 0; count < int.Parse(this.PeopleCount.Text); count++)
+                    {
+                        int weaponNumber = random.Next(weaponList.Count);
+                        string selectedWeapon = weaponList[weaponNumber];
+                        int categoryNumber = weaponListIndexLine[weaponList[weaponNumber]];
+                        teamCategoryNumberList.Add(categoryNumber);
+                        organization.Add(weaponList[weaponNumber]);
+
+                        this.PlayerUsingWeaponTextBoxList[count].Text = selectedWeapon;
+                        this.PlayerUsingWeaponCategoryTextBlockList[count].Text = this.weaponCategoryNameList[categoryNumber];
+                    }
+                    var hashset = new HashSet<int>();
+                    bool isCompetitor = false;
+                    foreach (var categoryNumber in teamCategoryNumberList)
+                    {
+                        if (hashset.Add(categoryNumber) == false)
+                        {
+                            isCompetitor = true;
+                        }
+                    }
+                    if (!isCompetitor)
+                    {
+                        isDecided = true;
+                    }
+                }
+                sw.Stop();
+            }
 
             StackPanel teamWeaponCategory = this.TeamWeaponCategory;
 
-            string resultMD = $"## {DateTime.Now}\n";
-
-            for (int count = 0; count < int.Parse(this.PeopleCount.Text); count++)
+            if ((bool)this.WeaponRadio.IsChecked)
             {
-                // resultMD += $"## プレイヤー{count + 1}\n";
-                int categoryNumber = random.Next(this.weaponCategoryNameList.Count);
-                List<string> weaponCategory = this.weaponCategorys[categoryNumber];
-                string selectedWeapon = weaponCategory[random.Next(weaponCategory.Count)];
-                this.PlayerUsingWeaponTextBoxList[count].Text = selectedWeapon;
-                this.PlayerUsingWeaponCategoryTextBlockList[count].Text = this.weaponCategoryNameList[categoryNumber];
-                resultMD += $"- {selectedWeapon}({this.weaponCategoryNameList[categoryNumber]})\n";
-                this.weaponCategoryNameList.RemoveRange(categoryNumber, 1);
-                this.weaponCategorys.RemoveRange(categoryNumber, 1);
+                 WeaponMethod();
             }
-            this.ResetWeaponCategorys();
+            else
+            {
+                CategoryMethod();
+            }
 
-            Clipboard.SetText(resultMD);
-            this.SetTextStatusBar();
+            // Clipboard.SetText(resultMD);
+
+            this.SetTextStatusBar(sw.Elapsed.ToString());
         }
     }
 }
