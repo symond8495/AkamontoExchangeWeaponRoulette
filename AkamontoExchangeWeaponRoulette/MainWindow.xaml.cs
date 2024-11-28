@@ -303,87 +303,89 @@ namespace AkamontoExchangeWeaponRoulette
             this.LogStatus.Text = $"最終ルーレット: {DateTime.Now}";
             this.TimeTextBox.Text = timer ;
         }
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void WeaponMethod()
         {
-            string resultMD = $"## {DateTime.Now}\n";
-            Stopwatch sw = new Stopwatch();
-            void WeaponMethod()
+            Random random = new Random();
+            for (int count = 0; count < int.Parse(this.PeopleCount.Text); count++)
             {
+                int categoryNumber = random.Next(this.weaponCategoryNameList.Count);
+                List<string> weaponCategory = this.weaponCategorys[categoryNumber];
+                string selectedWeapon = weaponCategory[random.Next(weaponCategory.Count)];
+                this.PlayerUsingWeaponTextBoxList[count].Text = selectedWeapon;
+                this.PlayerUsingWeaponCategoryTextBlockList[count].Text = this.weaponCategoryNameList[categoryNumber];
+                this.weaponCategoryNameList.RemoveRange(categoryNumber, 1);
+                this.weaponCategorys.RemoveRange(categoryNumber, 1);
+            }
+            this.ResetWeaponCategorys();
+        }
+        private void CategoryMethod()
+        {
+            List<string> weaponList = new List<string>();
+            Dictionary<string, int> weaponListIndexLine = new Dictionary<string, int>();
+            foreach (var item in this.weaponCategorys.Select((list, index) => new { list, index }))
+            {
+                weaponList.AddRange(item.list);
+                foreach (var weapon in item.list)
+                {
+                    weaponListIndexLine[weapon] = item.index;
+                }
+            }
+            bool isDecided = false;
+            while (!isDecided)
+            {
+                List<int> teamCategoryNumberList = new List<int>();
+                List<string> organization = new List<string>();
                 Random random = new Random();
-                sw.Start();
                 for (int count = 0; count < int.Parse(this.PeopleCount.Text); count++)
                 {
-                    int categoryNumber = random.Next(this.weaponCategoryNameList.Count);
-                    List<string> weaponCategory = this.weaponCategorys[categoryNumber];
-                    string selectedWeapon = weaponCategory[random.Next(weaponCategory.Count)];
+                    int weaponNumber = random.Next(weaponList.Count);
+                    string selectedWeapon = weaponList[weaponNumber];
+                    int categoryNumber = weaponListIndexLine[weaponList[weaponNumber]];
+                    teamCategoryNumberList.Add(categoryNumber);
+                    organization.Add(weaponList[weaponNumber]);
+
                     this.PlayerUsingWeaponTextBoxList[count].Text = selectedWeapon;
                     this.PlayerUsingWeaponCategoryTextBlockList[count].Text = this.weaponCategoryNameList[categoryNumber];
-                    resultMD += $"- {selectedWeapon}({this.weaponCategoryNameList[categoryNumber]})\n";
-                    this.weaponCategoryNameList.RemoveRange(categoryNumber, 1);
-                    this.weaponCategorys.RemoveRange(categoryNumber, 1);
                 }
-                sw.Stop();
-                this.ResetWeaponCategorys();
-            }
-            void CategoryMethod()
-            {
-                List<string> weaponList = new List<string>();
-                Dictionary<string, int>weaponListIndexLine = new Dictionary<string, int>();
-                foreach(var item in this.weaponCategorys.Select((list, index) => new { list, index}))
+                var hashset = new HashSet<int>();
+                bool isCompetitor = false;
+                foreach (var categoryNumber in teamCategoryNumberList)
                 {
-                    weaponList.AddRange(item.list);
-                    foreach(var weapon in item.list)
+                    if (hashset.Add(categoryNumber) == false)
                     {
-                        weaponListIndexLine[weapon] = item.index;
+                        isCompetitor = true;
                     }
                 }
-                bool isDecided = false;
-                sw.Start();
-                while (!isDecided)
+                if (!isCompetitor)
                 {
-                    List<int> teamCategoryNumberList = new List<int>();
-                    List<string> organization = new List<string>();
-                    Random random = new Random();
-                    for (int count = 0; count < int.Parse(this.PeopleCount.Text); count++)
-                    {
-                        int weaponNumber = random.Next(weaponList.Count);
-                        string selectedWeapon = weaponList[weaponNumber];
-                        int categoryNumber = weaponListIndexLine[weaponList[weaponNumber]];
-                        teamCategoryNumberList.Add(categoryNumber);
-                        organization.Add(weaponList[weaponNumber]);
-
-                        this.PlayerUsingWeaponTextBoxList[count].Text = selectedWeapon;
-                        this.PlayerUsingWeaponCategoryTextBlockList[count].Text = this.weaponCategoryNameList[categoryNumber];
-                    }
-                    var hashset = new HashSet<int>();
-                    bool isCompetitor = false;
-                    foreach (var categoryNumber in teamCategoryNumberList)
-                    {
-                        if (hashset.Add(categoryNumber) == false)
-                        {
-                            isCompetitor = true;
-                        }
-                    }
-                    if (!isCompetitor)
-                    {
-                        isDecided = true;
-                    }
+                    isDecided = true;
                 }
-                sw.Stop();
             }
-
+        }
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            Stopwatch sw = new Stopwatch();
             StackPanel teamWeaponCategory = this.TeamWeaponCategory;
+            int tryCount = 10000;
 
             if ((bool)this.WeaponRadio.IsChecked)
             {
-                 WeaponMethod();
+                sw.Start();
+                for (int i = 0; i != tryCount; i++)
+                {
+                    WeaponMethod();
+                }
+                sw.Stop();
             }
             else
             {
-                CategoryMethod();
+                sw.Start();
+                for (int i = 0; i != tryCount; i++)
+                {
+                    CategoryMethod();
+                }
+                sw.Stop();
             }
-
-            // Clipboard.SetText(resultMD);
 
             this.SetTextStatusBar(sw.Elapsed.ToString());
         }
